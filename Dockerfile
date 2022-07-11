@@ -75,8 +75,6 @@ RUN apt-mark hold libcudnn8 libcudnn8-dev
 RUN apt-mark hold libnvinfer8 libnvonnxparsers8 libnvparsers8 libnvinfer-plugin8 libnvinfer-dev \
     libnvonnxparsers-dev libnvparsers-dev libnvinfer-plugin-dev
 
-# RUN apt-cache policy | grep universe
-
 COPY --chown=${USER} ./autoware /home/${USER}/autoware
 SHELL ["/bin/bash", "-c"]
 RUN apt-get update \
@@ -89,5 +87,6 @@ RUN apt-get update \
     && MAKEFLAGS="-j 2" colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-USER ${USER}
+# USER ${USER}
+RUN echo "source ~/autoware/install/setup.bash" >> .bashrc
 CMD ["/bin/bash"]
