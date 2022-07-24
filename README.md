@@ -8,7 +8,7 @@ mkdir src
 vcs import src < autoware.repos
 
 # planning_simulator
-ros2 launch autoware_launch planning_simulator.launch.xml map_path:=$HOME/aw_universe/maps/town10 vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit
+ros2 launch autoware_launch planning_simulator.launch.xml map_path:=$HOME/mount/maps/town10 vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit
 
 # pointcloud_map_loader
 ros2 run map_loader pointcloud_map_loader --ros-args -p "pcd_paths_or_directory:=[path/to/pointcloud1.pcd, path/to/pointcloud2.pcd, ...]"`
