@@ -1,11 +1,6 @@
-ARG cuda_base_image=nvidia/cuda:11.6.1-devel-ubuntu20.04
-# ARG cuda_base_image=nvidia/cuda:11.4.3-devel-ubuntu20.04
-FROM ${cuda_base_image}
+FROM nvidia/cuda:11.6.1-devel-ubuntu20.04
 
 ARG rosdistro=galactic
-# ARG rmw_implementation=rmw_cyclonedds_cpp
-ARG base_image=ubuntu:20.04
-ARG cuda_version=11.4
 ARG cudnn_version=8.2.4.15-1+cuda11.4
 ARG tensorrt_version=8.2.4-1+cuda11.4
 ARG clang_format_version=14.0.6
@@ -13,12 +8,12 @@ ARG UID=1000
 ARG USER=developer
 RUN useradd -m -u ${UID} ${USER}
 ENV DEBIAN_FRONTEND=noninteractive \
-    HOME=/home/${USER}/
-WORKDIR /home/${USER}/
+    HOME=/home/${USER}
+WORKDIR ${HOME}
 
 RUN apt-get update && apt-get install -y \
-    curl wget git build-essential sudo \
-    software-properties-common gnupg lsb-release apt-transport-https cmake \
+    curl wget git build-essential sudo cmake \
+    software-properties-common gnupg lsb-release apt-transport-https \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Golang (Add Go PPA for shfmt)
@@ -33,13 +28,8 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o 
 RUN apt-get update && apt-get install -y \
     # ros
     ros-${rosdistro}-desktop \
-    python3-colcon-common-extensions \
-    python3-flake8 \
-    python3-pip \
-    python3-pytest-cov \
-    python3-rosdep \
-    python3-setuptools \
-    python3-vcstool \
+    python3-colcon-common-extensions python3-flake8 python3-pip python3-pytest-cov \
+    python3-rosdep python3-setuptools python3-vcstool \
     # rmw_implementation
     ros-${rosdistro}-rmw-cyclonedds-cpp \
     # pacmod
@@ -78,7 +68,7 @@ RUN python3 -m pip install --upgrade pip \
 # Install Autoware Universe dependencies
 RUN geographiclib-get-geoids egm2008-1
 
-COPY --chown=${USER} ./autoware /home/${USER}/autoware
+COPY --chown=${USER} ./autoware ${HOME}/autoware
 SHELL ["/bin/bash", "-c"]
 RUN apt-get update \
     && cd autoware \
@@ -90,6 +80,7 @@ RUN apt-get update \
     && MAKEFLAGS="-j 2" colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# USER ${USER}
+RUN chown -R ${USER} .ros
+USER ${USER}
 RUN echo "source ~/autoware/install/setup.bash" >> .bashrc
 CMD ["/bin/bash"]
